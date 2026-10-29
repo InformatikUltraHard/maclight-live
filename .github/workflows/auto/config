@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+# Stable Bookworm baseline. Keep external asset revisions controlled in release builds.
+export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-1761868800}"
+lb config \
+  --mode debian \
+  --distribution bookworm \
+  --architectures amd64 \
+  --binary-image iso-hybrid \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --debian-installer none \
+  --bootappend-live "boot=live components username=maclight hostname=maclight quiet" \
+  --apt-recommends false \
+  --apt-options "--yes -oAcquire::Retries=3" \
+  --iso-application "Maclight Live" \
+  --iso-publisher "Maclight Live Project" \
+  --iso-volume "MACLIGHT_LIVE" \
+  --memtest none

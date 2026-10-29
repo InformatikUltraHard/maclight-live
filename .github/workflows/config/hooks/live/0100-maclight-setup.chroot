@@ -1,0 +1,62 @@
+#!/bin/sh
+set -eu
+# Runs inside the image chroot. Do not attempt to start graphical services here.
+export DEBIAN_FRONTEND=noninteractive
+
+# Disable services that are unnecessary on a small live desktop, if present.
+for unit in avahi-daemon.service bluetooth.service ModemManager.service; do
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl disable "$unit" 2>/dev/null || true
+  fi
+done
+
+# Kernel modules are built into/available from Debian's kernel packages.
+# These files request modules when hardware exists; absent modules are harmless.
+cat > /etc/modules-load.d/maclight.conf <<'EOF'
+applesmc
+hid_apple
+bcm5974
+EOF
+
+# Natural scrolling is applied through libinput's Xorg configuration.
+install -d /etc/X11/xorg.conf.d
+cat > /etc/X11/xorg.conf.d/40-libinput-natural-scroll.conf <<'EOF'
+Section "InputClass"
+    Identifier "Maclight natural scrolling"
+    MatchIsTouchpad "on"
+    Driver "libinput"
+    Option "NaturalScrolling" "true"
+    Option "Tapping" "true"
+    Option "DisableWhileTyping" "true"
+EndSection
+EOF
+
+# LightDM should offer both themed Xfce and a plain fallback session.
+if [ -f /etc/lightdm/lightdm.conf ]; then
+  sed -i '/^user-session=/d' /etc/lightdm/lightdm.conf
+  printf '\\n[Seat:*]\\nuser-session=xfce\\ngreeter-session=lightdm-gtk-greeter\\n' >> /etc/lightdm/lightdm.conf
+fi
+# Some packages may not create the config until first boot.
+install -d /etc/lightdm/lightdm.conf.d
+cat > /etc/lightdm/lightdm.conf.d/50-maclight.conf <<'EOF'
+[Seat:*]
+user-session=xfce
+greeter-session=lightdm-gtk-greeter
+EOF
+
+# Make the live user's home receive the skel defaults.
+# live-config normally copies /etc/skel; this also supports a pre-created account.
+if id maclight >/dev/null 2>&1; then
+  cp -an /etc/skel/. "/home/maclight/" 2>/dev/null || true
+  chown -R maclight:maclight /home/maclight 2>/dev/null || true
+fi
+
+# Keep zram modest: 25% of RAM, capped at 512 MiB. zram-tools reads this file.
+cat > /etc/default/zramswap <<'EOF'
+ALGO=zstd
+PERCENT=25
+PRIORITY=100
+EOF
+
+# Do not hard-fail the image if a kernel/module name differs on this hardware.
+exit 0

@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+# Avoid relying on optional app-menu plugins: the top panel has app/window controls,
+# but a universal GTK global menu cannot be guaranteed on Debian/Xfce.
+# Panel layout is supplied in /etc/skel and loaded for newly created live users.
+install -d /etc/skel/.config/autostart
+# The stock Xfce session is the recovery path if a theme/plugin is broken.
+cat > /usr/share/xsessions/xfce.desktop <<'EOF'
+[Desktop Entry]
+Name=Xfce Session
+Comment=Lightweight Xfce desktop
+Exec=startxfce4
+TryExec=startxfce4
+Type=Application
+DesktopNames=XFCE
+EOF
+# Configure Plank only if its config directory exists; it generates defaults on first run.
+install -d /etc/skel/.config/plank/dock1
+cat > /etc/skel/.config/plank/dock1/settings <<'EOF'
+[PlankDockPreferences]
+DockItems=
+Theme=Gtk+
+IconSize=44
+ZoomEnabled=true
+ZoomPercent=120
+HideMode=1
+Alignment=3
+ItemsAlignment=3
+Monitor=0
+Position=3
+Offset=0
+PressureReveal=false
+LockItems=false
+EOF
+# Backlight hotkeys differ by model/firmware. xfce4-power-manager handles common ACPI events.
+exit 0

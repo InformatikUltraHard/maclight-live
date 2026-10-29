@@ -1,0 +1,3 @@
+# Optional installer. Calamares is not enabled by default because partitioning
+# and bootloader behavior on mixed-EFI Macs needs per-machine validation.
+# calamares

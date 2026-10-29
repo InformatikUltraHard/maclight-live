@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Xfce (fallback)
+Comment=Plain Xfce session without Maclight startup extras
+Exec=startxfce4
+TryExec=startxfce4
+Type=Application
+DesktopNames=XFCE

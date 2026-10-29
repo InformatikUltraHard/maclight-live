@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Xfce Session
+Comment=Lightweight Xfce desktop
+Exec=startxfce4
+TryExec=startxfce4
+Type=Application
+DesktopNames=XFCE

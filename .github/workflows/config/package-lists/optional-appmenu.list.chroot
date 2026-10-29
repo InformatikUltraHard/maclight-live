@@ -1,0 +1,4 @@
+# Optional: package availability differs by Debian suite/architecture.
+# Install only after confirming package names in the chosen Bookworm repository.
+# vala-panel-appmenu
+# xfce4-appmenu-plugin

@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+# Theme sources are pulled at build time. For release builds, pin immutable commit
+# hashes and verify archives; branch names here are convenient development defaults.
+install -d /usr/share/themes /usr/share/icons /usr/share/fonts/truetype/maclight
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+if command -v git >/dev/null 2>&1; then
+  if git clone --depth 1 https://github.com/vinceliuice/WhiteSur-gtk-theme.git "$tmp/gtk" 2>/dev/null; then
+    if [ -x "$tmp/gtk/install.sh" ]; then
+      "$tmp/gtk/install.sh" -d /usr/share/themes -c Dark -t blue --normal 2>/dev/null || true
+    fi
+  fi
+  if git clone --depth 1 https://github.com/vinceliuice/WhiteSur-icon-theme.git "$tmp/icons" 2>/dev/null; then
+    if [ -x "$tmp/icons/install.sh" ]; then
+      "$tmp/icons/install.sh" -d /usr/share/icons 2>/dev/null || true
+    fi
+  fi
+  if git clone --depth 1 https://github.com/vinceliuice/WhiteSur-cursors.git "$tmp/cursors" 2>/dev/null; then
+    if [ -x "$tmp/cursors/install.sh" ]; then
+      "$tmp/cursors/install.sh" -d /usr/share/icons 2>/dev/null || true
+    fi
+  fi
+  if git clone --depth 1 https://github.com/tsujei/Kvantum.git "$tmp/kvantum" 2>/dev/null; then
+    # Upstream Kvantum repo layout varies; Debian's package remains the fallback.
+    find "$tmp/kvantum" -maxdepth 4 -type d -iname '*whitesur*' -exec cp -a {} /usr/share/Kvantum/ \; 2>/dev/null || true
+  fi
+fi
+
+# Do not bundle SF Pro or Apple artwork. Inter is distributed by Debian.
+fc-cache -f >/dev/null 2>&1 || true
+exit 0
